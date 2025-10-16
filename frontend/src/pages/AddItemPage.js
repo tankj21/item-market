@@ -6,12 +6,11 @@ const API_URL = 'http://localhost:3001/api';
 
 function AddItemPage() {
   const [itemName, setItemName] = useState('');
-  const [itemImage, setItemImage] = useState(null); // 画像ファイルの状態
+  const [itemImage, setItemImage] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // ★追加: ファイルが選択されたときのハンドラ
   const handleImageChange = (e) => {
     setItemImage(e.target.files[0]);
   };
@@ -23,20 +22,17 @@ function AddItemPage() {
       return;
     }
 
-    // ★修正: FormDataを使ってテキストと画像を一緒に送信する
     const formData = new FormData();
-    formData.append('name', itemName); // テキストデータを追加
+    formData.append('name', itemName);
     if (itemImage) {
-      formData.append('image', itemImage); // 画像データがあれば追加
+      formData.append('image', itemImage);
     }
 
     try {
-      // multipart/form-dataとして送信
-      const response = await axios.post(`${API_URL}/items`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // ★★★ ここを修正 ★★★
+      // headers オブジェクトを削除します。
+      // axiosがFormDataを検知して、正しいヘッダーを自動で設定してくれます。
+      const response = await axios.post(`${API_URL}/items`, formData);
       
       const newItemId = response.data.id;
       setMessage(`「${itemName}」を登録しました。詳細ページに移動します。`);
@@ -72,7 +68,6 @@ function AddItemPage() {
               placeholder="例: フェニックスの尾"
             />
           </div>
-          {/* ★追加: 画像ファイル選択フォーム */}
           <div className="form-group">
             <label htmlFor="item-image-input">画像 (任意):</label>
             <input
@@ -92,3 +87,4 @@ function AddItemPage() {
 }
 
 export default AddItemPage;
+

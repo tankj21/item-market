@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
-// ★修正: バックエンドのベースURLを定数化
-const BASE_URL = 'http://localhost:3001'; 
+const BASE_URL = 'http://localhost:3001';
 const API_URL = `${BASE_URL}/api`;
 
 function ItemDetailPage() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [itemData, setItemData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -41,13 +40,12 @@ function ItemDetailPage() {
   }
 
   const { details, history } = itemData;
-  // ★追加: 画像URLを組み立てる
   const imageUrl = details.image_url ? `${BASE_URL}${details.image_url}` : null;
 
   return (
     <main>
       <section className="item-detail-header">
-        {/* ★追加: 画像表示エリア */}
+        {/* ★画像表示エリアを追加 */}
         <div className="item-visual">
           {imageUrl ? (
             <img src={imageUrl} alt={details.name} className="item-image" />
@@ -79,7 +77,7 @@ function ItemDetailPage() {
             <tbody>
               {history.map((trade, index) => (
                 <tr key={index}>
-                  {/* ★修正: toLocaleStringでJSTに変換して表示 */}
+                  {/* ★toLocaleStringでJSTに変換 */}
                   <td>{new Date(trade.created_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}</td>
                   <td>{trade.price.toLocaleString()} G</td>
                 </tr>
@@ -95,3 +93,4 @@ function ItemDetailPage() {
 }
 
 export default ItemDetailPage;
+

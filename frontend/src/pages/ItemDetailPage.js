@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const BASE_API_URL = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL.replace('/api', '') : `http://localhost:3001/api`;
+const BASE_URL = 'http://localhost:3001';
+const API_URL = `${BASE_URL}/api`;
 
 function ItemDetailPage() {
   const { id } = useParams();
@@ -39,11 +40,12 @@ function ItemDetailPage() {
   }
 
   const { details, history } = itemData;
-  const imageUrl = details.image_url ? `${BASE_API_URL}${details.image_url}` : null;
+  const imageUrl = details.image_url ? `${BASE_URL}${details.image_url}` : null;
 
   return (
     <main>
       <section className="item-detail-header">
+        {/* ★画像表示エリアを追加 */}
         <div className="item-visual">
           {imageUrl ? (
             <img src={imageUrl} alt={details.name} className="item-image" />
@@ -75,7 +77,7 @@ function ItemDetailPage() {
             <tbody>
               {history.map((trade, index) => (
                 <tr key={index}>
-                  {/* Format the timestamp to Japan Standard Time (JST) */}
+                  {/* ★toLocaleStringでJSTに変換 */}
                   <td>{new Date(trade.created_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}</td>
                   <td>{trade.price.toLocaleString()} G</td>
                 </tr>
@@ -91,3 +93,4 @@ function ItemDetailPage() {
 }
 
 export default ItemDetailPage;
+

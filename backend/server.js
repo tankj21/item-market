@@ -3,19 +3,28 @@ const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const dbPath = path.join(process.env.RENDER_DISK_PATH || '.', 'market.db');
+const uploadsPath = path.join(process.env.RENDER_DISK_PATH || '.', 'uploads');
 
 // --- Middleware Settings ---
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+if (!fs.existsSync(uploadsPath)){
+    console.log(`Uploads directory not found. Creating at: ${uploadsPath}`);
+    fs.mkdirSync(uploadsPath, { recursive: true});
+}
+
+app.use('/uploads', express.static(uploadsPath));
 
 // --- Multer Configuration ---
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
+  destination: (req, file, cb) => cb(null, uploadsPath),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 const upload = multer({ storage: storage });

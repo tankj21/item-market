@@ -1,5 +1,3 @@
-// src/pages/AddItemPage.js (新規作成)
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -8,9 +6,15 @@ const API_URL = 'http://localhost:3001/api';
 
 function AddItemPage() {
   const [itemName, setItemName] = useState('');
+  const [itemImage, setItemImage] = useState(null); // 画像ファイルの状態
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // ページ遷移用のフック
+  const navigate = useNavigate();
+
+  // ★追加: ファイルが選択されたときのハンドラ
+  const handleImageChange = (e) => {
+    setItemImage(e.target.files[0]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,19 +23,28 @@ function AddItemPage() {
       return;
     }
 
+    // ★修正: FormDataを使ってテキストと画像を一緒に送信する
+    const formData = new FormData();
+    formData.append('name', itemName); // テキストデータを追加
+    if (itemImage) {
+      formData.append('image', itemImage); // 画像データがあれば追加
+    }
+
     try {
-      const response = await axios.post(`${API_URL}/items`, { name: itemName });
-
+      // multipart/form-dataとして送信
+      const response = await axios.post(`${API_URL}/items`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
       const newItemId = response.data.id;
-
-      setMessage(`「${itemName}」を正常に登録しました。`);
+      setMessage(`「${itemName}」を登録しました。詳細ページに移動します。`);
       setError('');
-      setItemName(''); // 入力欄をクリア
-
-      // 2秒後に相場ページへ自動でリダイレクト
+      
       setTimeout(() => {
         navigate(`/items/${newItemId}`);
-      }, 2000);
+      }, 1500);
 
     } catch (err) {
       console.error("Error adding item:", err.response);
@@ -57,6 +70,16 @@ function AddItemPage() {
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
               placeholder="例: フェニックスの尾"
+            />
+          </div>
+          {/* ★追加: 画像ファイル選択フォーム */}
+          <div className="form-group">
+            <label htmlFor="item-image-input">画像 (任意):</label>
+            <input
+              id="item-image-input"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
             />
           </div>
           <button type="submit">データベースに追加</button>

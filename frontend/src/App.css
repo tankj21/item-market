@@ -201,3 +201,54 @@ button:hover {
 .price-history table {
   margin-top: 1rem;
 }
+/* ... existing styles ... */
+
+/* ★以下を末尾に追加★ */
+
+/* AddItemPage: ファイル入力 */
+input[type="file"] {
+  border: 1px solid #ccc;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+/* ItemDetailPage: 画像関連 */
+.item-detail-header {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.item-visual {
+  flex-shrink: 0;
+}
+
+.item-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.item-image-placeholder {
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #aaa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.item-info {
+  flex-grow: 1;
+}
+
+.item-info h2 {
+  margin-top: 0;
+}

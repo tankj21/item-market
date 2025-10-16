@@ -315,3 +315,61 @@ input[type="file"] {
   margin-top: 0;
 }
 
+/* --- AddItemPage: Tag Selection --- */
+.form-group-tags {
+  width: 100%;
+  max-width: 400px;
+  text-align: left;
+}
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* --- Shared: Checkbox Styling --- */
+.tag-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.tag-checkbox label {
+  cursor: pointer;
+  font-weight: normal;
+}
+.tag-checkbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* --- MarketPage: Filter --- */
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* --- MarketPage: Tag Display in Table --- */
+.tags-cell {
+  text-align: left;
+}
+.item-tag {
+  display: inline-block;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+

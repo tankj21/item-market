@@ -7,12 +7,13 @@ const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const dbPath = path.join(process.env.RENDER_DISK_PATH || '.', 'market.db');
-const uploadsPath = path.join(process.env.RENDER_DISK_PATH || '.', 'uploads');
 
-// --- Middleware Settings ---
 app.use(cors());
 app.use(express.json());
+
+const dbPath = path.join(process.env.RENDER_DISK_PATH || __dirname,'market.db');
+const uploadsPath = path.join(process.env.RENDER_DISK_PATH || __dirname, 'uploads');
+
 
 
 if (!fs.existsSync(uploadsPath)){
@@ -21,6 +22,8 @@ if (!fs.existsSync(uploadsPath)){
 }
 
 app.use('/uploads', express.static(uploadsPath));
+
+app.use(express.static(path.join(__dirname, 'client/build')));
 
 // --- Multer Configuration ---
 const storage = multer.diskStorage({
@@ -61,7 +64,7 @@ db.serialize(() => {
         FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
     )`);
 
-    const tags = ['武器', '防具', '道具', '素材', '薬品', 'その他'];
+    const tags = ['武器', '防具', '道具', '素材', 'その他'];
     const tagStmt = db.prepare("INSERT OR IGNORE INTO tags (name) VALUES (?)");
     tags.forEach(tag => tagStmt.run(tag));
     tagStmt.finalize();
@@ -189,6 +192,10 @@ app.post('/api/prices', (req, res) => {
         else res.status(201).json({ "message": "Success", "id": this.lastID });
     });
 });
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+})
 
 // --- Start Server ---
 app.listen(PORT, () => {

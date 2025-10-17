@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:3001';
-const API_URL = `${BASE_URL}/api`;
+const API_URL = `/api`;
+const imageUrl = details.image_url ? details.image_url : null;
 
 function ItemDetailPage() {
   const { id } = useParams();
@@ -40,8 +40,7 @@ function ItemDetailPage() {
   }
 
   const { details, history } = itemData;
-  const imageUrl = details.image_url ? `${BASE_URL}${details.image_url}` : null;
-
+  const imageUrl = details.image_url ? details.image_url : null;
   return (
     <main>
       <section className="item-detail-header">

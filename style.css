@@ -1,0 +1,533 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+    min-height: 100vh;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ログイン画面 */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.login-card {
+    background: #1e293b;
+    border-radius: 0.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    padding: 2rem;
+    width: 100%;
+    max-width: 28rem;
+    border: 1px solid #a855f7;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.login-header h1 {
+    color: #d8b4fe;
+    font-size: 1.875rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.login-header p {
+    color: #94a3b8;
+}
+
+.login-form label {
+    display: block;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #334155;
+    border: 1px solid #475569;
+    border-radius: 0.5rem;
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: #a855f7;
+}
+
+.login-form input::placeholder {
+    color: #64748b;
+}
+
+.error-message {
+    padding: 0.75rem;
+    background: rgba(127, 29, 29, 0.5);
+    border: 1px solid #dc2626;
+    border-radius: 0.5rem;
+    color: #fca5a5;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.login-form button {
+    width: 100%;
+    padding: 0.75rem;
+    background: #9333ea;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.login-form button:hover:not(:disabled) {
+    background: #7e22ce;
+}
+
+.login-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* メイン画面 */
+.main-container {
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.content-wrapper {
+    max-width: 90rem;
+    margin: 0 auto;
+    background: #1e293b;
+    border-radius: 0.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid #a855f7;
+    overflow: hidden;
+}
+
+/* ヘッダー */
+.header {
+    background: linear-gradient(to right, #9333ea, #ec4899);
+    padding: 1.5rem;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.header h1 {
+    color: white;
+    font-size: 1.875rem;
+    font-weight: bold;
+}
+
+.refresh-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.refresh-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.refresh-btn.spinning svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.header-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.5rem 0.5rem 0.5rem 2.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.5rem;
+    color: white;
+    font-size: 1rem;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.search-box input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+#sortSelect {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.5rem;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#sortSelect:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+#sortSelect option {
+    background: #1e293b;
+}
+
+/* コンテンツ */
+.content {
+    padding: 1.5rem;
+}
+
+.auction-count {
+    color: #94a3b8;
+    margin-bottom: 1rem;
+}
+
+.loading-message {
+    text-align: center;
+    padding: 3rem 0;
+    color: #94a3b8;
+}
+
+.loading-spinner {
+    margin: 0 auto 0.5rem;
+    animation: spin 1s linear infinite;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 3rem 0;
+    color: #94a3b8;
+}
+
+.empty-message svg {
+    margin: 0 auto 0.5rem;
+    opacity: 0.5;
+}
+
+/* オークショングリッド */
+.auction-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.auction-card {
+    background: #334155;
+    border: 1px solid #475569;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    transition: border-color 0.2s;
+}
+
+.auction-card:hover {
+    border-color: #a855f7;
+}
+
+.auction-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.auction-header h3 {
+    color: #d8b4fe;
+    font-size: 1.125rem;
+    font-weight: 600;
+    flex: 1;
+    word-break: break-word;
+}
+
+.auction-id {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+
+.auction-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+}
+
+.detail-item svg {
+    color: #c084fc;
+    flex-shrink: 0;
+}
+
+.detail-item .label {
+    font-weight: 500;
+}
+
+.detail-item .time {
+    font-size: 0.75rem;
+}
+
+.price-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid #475569;
+}
+
+.price-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.price-value {
+    color: #4ade80;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+/* レスポンシブ */
+@media (max-width: 640px) {
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .auction-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-controls {
+        flex-direction: column;
+    }
+    
+    .search-box {
+        min-width: 100%;
+    }
+}
+
+@media (min-width: 768px) {
+    .auction-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .auction-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* モーダル */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: #1e293b;
+    border: 1px solid #a855f7;
+    border-radius: 0.5rem;
+    max-width: 50rem;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #475569;
+    background: linear-gradient(to right, #9333ea, #ec4899);
+}
+
+.modal-header h2 {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 2rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.detail-section {
+    margin-bottom: 1.5rem;
+}
+
+.detail-section:last-child {
+    margin-bottom: 0;
+}
+
+.detail-section h3 {
+    color: #d8b4fe;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #475569;
+}
+
+.detail-row {
+    display: flex;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #334155;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #94a3b8;
+    font-weight: 500;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.detail-row span:not(.detail-label) {
+    color: #cbd5e1;
+    flex: 1;
+}
+
+.price-text {
+    color: #4ade80 !important;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.lore-text {
+    background: #334155;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid #475569;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.mc-text {
+    font-family: 'Courier New', monospace;
+}
+
+.nbt-info {
+    background: #334155;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid #475569;
+    margin-top: 0.5rem;
+}
+
+.text-muted {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.auction-card {
+    cursor: pointer;
+}
+
+.auction-card:active {
+    transform: scale(0.98);
+}

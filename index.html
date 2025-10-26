@@ -73,7 +73,6 @@
         </div>
     </div>
 
-    <!-- 詳細モーダル -->
     <div id="detailModal" class="modal hidden" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -146,9 +145,6 @@
                 // UUIDからMCIDを取得
                 await fetchMcidsForAuctions(data);
                 
-                // ★修正点:
-                // データを取得したら、現在の検索フィルターとソートを適用する
-                // filterAuctions が handleSort を呼び出し、handleSort が renderAuctions を呼び出す
                 const searchTerm = document.getElementById('searchInput').value;
                 filterAuctions(searchTerm);
 
@@ -206,7 +202,6 @@
 function handleSort() {
             const sortValue = document.getElementById('sortSelect').value;
             
-            // ★修正点: 'newest' と 'oldest' を 'time-asc' と 'time-desc' に変更
             if (sortValue === 'time-asc') {
                 // 残り時間が早い順 = expires_at が小さい順 (昇順)
                 filteredAuctions.sort((a, b) => (a.expires_at || 0) - (b.expires_at || 0));
@@ -237,7 +232,6 @@ function handleSort() {
                 }
                 const decompressed = pako.ungzip(bytes);
                 
-                // カスタムNBTパーサーを使用
                 return parseNBT(decompressed);
             } catch (e) {
                 console.error('Failed to parse item bytes:', e);
@@ -355,10 +349,9 @@ function handleSort() {
                 return compound;
             }
             
-            // ルートタグを読む
             const type = readByte();
             if (type !== 10) throw new Error('Root tag must be TAG_Compound');
-            readString(); // ルート名を読み飛ばす
+            readString(); 
             return readCompound();
         }
 
@@ -429,7 +422,7 @@ function handleSort() {
                     }));
                 }
                 
-                // 属性修飾子
+                // あとりびゅーと
                 if (tag.AttributeModifiers && tag.AttributeModifiers.value) {
                     info.attributes = tag.AttributeModifiers.value.map(attr => ({
                         name: attr.AttributeName || attr.Name || 'unknown',
@@ -813,3 +806,4 @@ function handleSort() {
     </script>
 </body>
 </html>
+

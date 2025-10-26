@@ -1,4 +1,4 @@
-# Item Market (アイテム相場サイト)
+# Azisaba Auction Viewer
 
 これは、Azisaba Life鯖でのオークションを閲覧するために作成されたWebアプリケーションです。
 

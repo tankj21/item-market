@@ -45,9 +45,11 @@
                         <input type="text" id="searchInput" placeholder="アイテム名または出品者で検索...">
                     </div>
                     <select id="sortSelect" onchange="handleSort()">
-                        <option value="time">最新順</option>
+                        <option value="time-asc">残り時間: 早い順</option>
+                        <option value="time-desc" selected>残り時間: 遅い順</option>
                         <option value="price-low">価格: 安い順</option>
                         <option value="price-high">価格: 高い順</option>
+                        <option value="name">アイテム名</option>
                     </select>
                 </div>
             </div>
@@ -121,37 +123,41 @@
         }
 
         async function fetchAuctions() {
-            const loading = document.getElementById('loadingMessage');
-            const grid = document.getElementById('auctionGrid');
-            
-            loading.classList.remove('hidden');
-            grid.innerHTML = '';
+            const loading = document.getElementById('loadingMessage');
+            const grid = document.getElementById('auctionGrid');
+            
+            loading.classList.remove('hidden');
+            grid.innerHTML = '';
 
-            try {
-                const response = await fetch('https://api-ktor.azisaba.net/servers/life/auctions', {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`
-                    }
-                });
+            try {
+                const response = await fetch('https://api-ktor.azisaba.net/servers/life/auctions', {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`
+                    }
+                });
 
-                if (!response.ok) {
-                    throw new Error('APIキーが無効か、アクセスに失敗しました');
-                }
+                if (!response.ok) {
+                    throw new Error('APIキーが無効か、アクセスに失敗しました');
+                }
 
-                const data = await response.json();
-                allAuctions = data;
-                filteredAuctions = [...data];
-                
-                // UUIDからMCIDを取得
-                await fetchMcidsForAuctions(data);
-                
-                renderAuctions();
-            } catch (error) {
-                throw error;
-            } finally {
-                loading.classList.add('hidden');
-            }
-        }
+                const data = await response.json();
+                allAuctions = data;
+                
+                // UUIDからMCIDを取得
+                await fetchMcidsForAuctions(data);
+                
+                // ★修正点:
+                // データを取得したら、現在の検索フィルターとソートを適用する
+                // filterAuctions が handleSort を呼び出し、handleSort が renderAuctions を呼び出す
+                const searchTerm = document.getElementById('searchInput').value;
+                filterAuctions(searchTerm);
+
+            } catch (error) {
+                throw error;
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
 
         async function fetchMcidsForAuctions(auctions) {
             const uuids = [...new Set(auctions.map(a => a.seller))];
@@ -197,19 +203,30 @@
             handleSort();
         }
 
-        function handleSort() {
-            const sortValue = document.getElementById('sortSelect').value;
-            
-            if (sortValue === 'price-low') {
-                filteredAuctions.sort((a, b) => (a.price || 0) - (b.price || 0));
-            } else if (sortValue === 'price-high') {
-                filteredAuctions.sort((a, b) => (b.price || 0) - (a.price || 0));
-            } else {
-                filteredAuctions.sort((a, b) => (b.expires_at || 0) - (a.expires_at || 0));
-            }
-            
-            renderAuctions();
-        }
+function handleSort() {
+            const sortValue = document.getElementById('sortSelect').value;
+            
+            // ★修正点: 'newest' と 'oldest' を 'time-asc' と 'time-desc' に変更
+            if (sortValue === 'time-asc') {
+                // 残り時間が早い順 = expires_at が小さい順 (昇順)
+                filteredAuctions.sort((a, b) => (a.expires_at || 0) - (b.expires_at || 0));
+            } else if (sortValue === 'time-desc') {
+                // 残り時間が遅い順 = expires_at が大きい順 (降順)
+                filteredAuctions.sort((a, b) => (b.expires_at || 0) - (a.expires_at || 0));
+            } else if (sortValue === 'price-low') {
+                filteredAuctions.sort((a, b) => (a.price || 0) - (b.price || 0));
+            } else if (sortValue === 'price-high') {
+                filteredAuctions.sort((a, b) => (b.price || 0) - (a.price || 0));
+            } else if (sortValue === 'name') {
+                filteredAuctions.sort((a, b) => {
+                    const nameA = stripMinecraftColors(a.item_name || '').toLowerCase();
+                    const nameB = stripMinecraftColors(b.item_name || '').toLowerCase();
+                    return nameA.localeCompare(nameB);
+                });
+            }
+            
+            renderAuctions();
+        }
 
         function parseItemBytes(base64Data) {
             try {
@@ -219,6 +236,8 @@
                     bytes[i] = binaryString.charCodeAt(i);
                 }
                 const decompressed = pako.ungzip(bytes);
+                
+                // カスタムNBTパーサーを使用
                 return parseNBT(decompressed);
             } catch (e) {
                 console.error('Failed to parse item bytes:', e);
@@ -226,20 +245,256 @@
             }
         }
 
-        function parseNBT(data) {
-            // 簡易的なNBTパース（完全な実装ではありません）
-            const result = {};
-            try {
-                const view = new DataView(data.buffer);
-                let offset = 0;
-                
-                // NBTデータの解析は複雑なため、基本的な情報のみ抽出
-                result.rawData = Array.from(data.slice(0, Math.min(100, data.length)));
-                result.size = data.length;
-            } catch (e) {
-                console.error('NBT parse error:', e);
+        function parseNBT(buffer) {
+            let offset = 0;
+            
+            function readByte() {
+                return buffer[offset++];
             }
-            return result;
+            
+            function readShort() {
+                const value = (buffer[offset] << 8) | buffer[offset + 1];
+                offset += 2;
+                return value;
+            }
+            
+            function readInt() {
+                const value = (buffer[offset] << 24) | (buffer[offset + 1] << 16) | 
+                             (buffer[offset + 2] << 8) | buffer[offset + 3];
+                offset += 4;
+                return value;
+            }
+            
+            function readLong() {
+                const high = readInt();
+                const low = readInt();
+                return high * 0x100000000 + low;
+            }
+            
+            function readFloat() {
+                const view = new DataView(buffer.buffer, buffer.byteOffset + offset, 4);
+                offset += 4;
+                return view.getFloat32(0, false);
+            }
+            
+            function readDouble() {
+                const view = new DataView(buffer.buffer, buffer.byteOffset + offset, 8);
+                offset += 8;
+                return view.getFloat64(0, false);
+            }
+            
+            function readString() {
+                const length = readShort();
+                const str = new TextDecoder('utf-8').decode(buffer.slice(offset, offset + length));
+                offset += length;
+                return str;
+            }
+            
+            function readByteArray() {
+                const length = readInt();
+                const arr = Array.from(buffer.slice(offset, offset + length));
+                offset += length;
+                return arr;
+            }
+            
+            function readIntArray() {
+                const length = readInt();
+                const arr = [];
+                for (let i = 0; i < length; i++) {
+                    arr.push(readInt());
+                }
+                return arr;
+            }
+            
+            function readLongArray() {
+                const length = readInt();
+                const arr = [];
+                for (let i = 0; i < length; i++) {
+                    arr.push(readLong());
+                }
+                return arr;
+            }
+            
+            function readTag(type) {
+                switch (type) {
+                    case 0: return null; // TAG_End
+                    case 1: return readByte(); // TAG_Byte
+                    case 2: return readShort(); // TAG_Short
+                    case 3: return readInt(); // TAG_Int
+                    case 4: return readLong(); // TAG_Long
+                    case 5: return readFloat(); // TAG_Float
+                    case 6: return readDouble(); // TAG_Double
+                    case 7: return readByteArray(); // TAG_Byte_Array
+                    case 8: return readString(); // TAG_String
+                    case 9: return readList(); // TAG_List
+                    case 10: return readCompound(); // TAG_Compound
+                    case 11: return readIntArray(); // TAG_Int_Array
+                    case 12: return readLongArray(); // TAG_Long_Array
+                    default: throw new Error('Unknown tag type: ' + type);
+                }
+            }
+            
+            function readList() {
+                const type = readByte();
+                const length = readInt();
+                const list = [];
+                for (let i = 0; i < length; i++) {
+                    list.push(readTag(type));
+                }
+                return { type, value: list };
+            }
+            
+            function readCompound() {
+                const compound = {};
+                while (true) {
+                    const type = readByte();
+                    if (type === 0) break; // TAG_End
+                    const name = readString();
+                    compound[name] = readTag(type);
+                }
+                return compound;
+            }
+            
+            // ルートタグを読む
+            const type = readByte();
+            if (type !== 10) throw new Error('Root tag must be TAG_Compound');
+            readString(); // ルート名を読み飛ばす
+            return readCompound();
+        }
+
+        function extractItemInfo(nbtData) {
+            if (!nbtData) return null;
+            
+            const info = {
+                enchantments: [],
+                attributes: [],
+                lore: [],
+                displayName: null,
+                damage: null,
+                unbreakable: false,
+                customModelData: null,
+                count: 1
+            };
+            
+            try {
+                // アイテム数
+                if (nbtData.Count !== undefined) {
+                    info.count = nbtData.Count;
+                }
+                
+                // タグデータ
+                const tag = nbtData.tag;
+                if (!tag) return info;
+                
+                // ダメージ値
+                if (tag.Damage !== undefined) {
+                    info.damage = tag.Damage;
+                }
+                
+                // 壊れない
+                if (tag.Unbreakable !== undefined) {
+                    info.unbreakable = tag.Unbreakable === 1;
+                }
+                
+                // カスタムモデルデータ
+                if (tag.CustomModelData !== undefined) {
+                    info.customModelData = tag.CustomModelData;
+                }
+                
+                // 表示情報
+                const display = tag.display;
+                if (display) {
+                    if (display.Name) {
+                        info.displayName = display.Name;
+                    }
+                    
+                    if (display.Lore && display.Lore.value) {
+                        info.lore = display.Lore.value;
+                    }
+                }
+                
+                // エンチャント
+                if (tag.Enchantments && tag.Enchantments.value) {
+                    info.enchantments = tag.Enchantments.value.map(ench => ({
+                        id: ench.id || 'unknown',
+                        level: ench.lvl || 1
+                    }));
+                }
+                
+                // 保存されたエンチャント
+                if (tag.StoredEnchantments && tag.StoredEnchantments.value) {
+                    info.storedEnchantments = tag.StoredEnchantments.value.map(ench => ({
+                        id: ench.id || 'unknown',
+                        level: ench.lvl || 1
+                    }));
+                }
+                
+                // 属性修飾子
+                if (tag.AttributeModifiers && tag.AttributeModifiers.value) {
+                    info.attributes = tag.AttributeModifiers.value.map(attr => ({
+                        name: attr.AttributeName || attr.Name || 'unknown',
+                        amount: attr.Amount || 0,
+                        operation: attr.Operation || 0,
+                        slot: attr.Slot || 'any'
+                    }));
+                }
+                
+            } catch (e) {
+                console.error('Error extracting item info:', e);
+            }
+            
+            return info;
+        }
+
+        function getEnchantmentName(id) {
+            const enchantNames = {
+                'minecraft:protection': 'ダメージ軽減',
+                'minecraft:fire_protection': '火炎耐性',
+                'minecraft:feather_falling': '落下耐性',
+                'minecraft:blast_protection': '爆発耐性',
+                'minecraft:projectile_protection': '飛び道具耐性',
+                'minecraft:respiration': '水中呼吸',
+                'minecraft:aqua_affinity': '水中採掘',
+                'minecraft:thorns': '棘の鎧',
+                'minecraft:depth_strider': '水中歩行',
+                'minecraft:frost_walker': '氷渡り',
+                'minecraft:sharpness': '鋭さ',
+                'minecraft:smite': 'アンデッド特効',
+                'minecraft:bane_of_arthropods': '虫特効',
+                'minecraft:knockback': 'ノックバック',
+                'minecraft:fire_aspect': '火属性',
+                'minecraft:looting': 'ドロップ増加',
+                'minecraft:sweeping': '範囲ダメージ増加',
+                'minecraft:efficiency': '効率強化',
+                'minecraft:silk_touch': 'シルクタッチ',
+                'minecraft:unbreaking': '耐久力',
+                'minecraft:fortune': '幸運',
+                'minecraft:power': 'パワー',
+                'minecraft:punch': '衝撃',
+                'minecraft:flame': 'フレイム',
+                'minecraft:infinity': '無限',
+                'minecraft:luck_of_the_sea': '宝釣り',
+                'minecraft:lure': '入れ食い',
+                'minecraft:mending': '修繕',
+                'minecraft:vanishing_curse': '消滅の呪い',
+                'minecraft:binding_curse': '束縛の呪い'
+            };
+            return enchantNames[id] || id.replace('minecraft:', '');
+        }
+
+        function getAttributeName(name) {
+            const attrNames = {
+                'generic.maxHealth': '最大体力',
+                'generic.followRange': '索敵範囲',
+                'generic.knockbackResistance': 'ノックバック耐性',
+                'generic.movementSpeed': '移動速度',
+                'generic.attackDamage': '攻撃力',
+                'generic.attackSpeed': '攻撃速度',
+                'generic.armor': '防御力',
+                'generic.armorToughness': '防具強度',
+                'generic.luck': '運'
+            };
+            return attrNames[name] || name.replace('generic.', '').replace('_', ' ');
         }
 
         function stripMinecraftColors(text) {
@@ -304,6 +559,7 @@
             
             const mcid = uuidToMcidCache[auction.seller] || auction.seller;
             const nbtData = auction.item_bytes ? parseItemBytes(auction.item_bytes) : null;
+            const itemInfo = nbtData ? extractItemInfo(nbtData) : null;
             
             let detailHtml = `
                 <div class="detail-section">
@@ -324,6 +580,12 @@
                         <span class="detail-label">Store ID:</span>
                         <span>${auction.store_id}</span>
                     </div>
+                    ${itemInfo && itemInfo.count > 1 ? `
+                    <div class="detail-row">
+                        <span class="detail-label">個数:</span>
+                        <span>${itemInfo.count}</span>
+                    </div>
+                    ` : ''}
                     <div class="detail-row">
                         <span class="detail-label">入札可能:</span>
                         <span>${auction.biddable ? 'はい' : 'いいえ'}</span>
@@ -350,19 +612,123 @@
                 `;
             }
             
-            if (nbtData) {
-                detailHtml += `
-                    <div class="detail-section">
-                        <h3>NBTデータ</h3>
-                        <div class="detail-row">
-                            <span class="detail-label">データサイズ:</span>
-                            <span>${nbtData.size} bytes</span>
+            if (itemInfo) {
+                // エンチャント
+                if (itemInfo.enchantments && itemInfo.enchantments.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <h3>エンチャント</h3>
+                            <div class="enchant-list">
+                                ${itemInfo.enchantments.map(ench => `
+                                    <div class="enchant-item">
+                                        <span class="enchant-name">${getEnchantmentName(ench.id)}</span>
+                                        <span class="enchant-level">Lv.${ench.level}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
-                        <div class="nbt-info">
-                            <p class="text-muted">※ NBTデータの完全な解析には専用パーサーが必要です</p>
+                    `;
+                }
+                
+                // 保存されたエンチャント
+                if (itemInfo.storedEnchantments && itemInfo.storedEnchantments.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <h3>保存されたエンチャント</h3>
+                            <div class="enchant-list">
+                                ${itemInfo.storedEnchantments.map(ench => `
+                                    <div class="enchant-item">
+                                        <span class="enchant-name">${getEnchantmentName(ench.id)}</span>
+                                        <span class="enchant-level">Lv.${ench.level}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
+                
+                // 属性
+                if (itemInfo.attributes && itemInfo.attributes.length > 0) {
+                    // スロットごとに属性を分類
+                    const attributesBySlot = {};
+                    itemInfo.attributes.forEach(attr => {
+                        const slot = attr.slot || 'any';
+                        if (!attributesBySlot[slot]) {
+                            attributesBySlot[slot] = [];
+                        }
+                        attributesBySlot[slot].push(attr);
+                    });
+                    
+                    const slotNames = {
+                        'mainhand': 'メインハンド',
+                        'offhand': 'オフハンド',
+                        'head': '頭',
+                        'chest': '胴体',
+                        'legs': '脚',
+                        'feet': '足',
+                        'any': '全スロット'
+                    };
+                    
+                    detailHtml += `<div class="detail-section"><h3>属性</h3>`;
+                    
+                    Object.keys(attributesBySlot).forEach(slot => {
+                        const attrs = attributesBySlot[slot];
+                        const slotName = slotNames[slot] || slot;
+                        
+                        if (Object.keys(attributesBySlot).length > 1) {
+                            detailHtml += `<div class="attribute-category">${slotName}:</div>`;
+                        }
+                        
+                        detailHtml += `<div class="attribute-simple-list">`;
+                        attrs.forEach(attr => {
+                            const name = getAttributeName(attr.name);
+                            let displayValue = '';
+                            
+                            // 小数点2桁まで表示（切り捨て）
+                            const truncate = (num) => Math.floor(num * 100) / 100;
+                            
+                            // 操作タイプに応じた表示
+                            if (attr.operation === 0) {
+                                // 加算
+                                const sign = attr.amount >= 0 ? '+' : '';
+                                displayValue = `${sign}${truncate(attr.amount)}`;
+                            } else if (attr.operation === 1) {
+                                // 乗算（基礎値）
+                                const percent = truncate(attr.amount * 100);
+                                displayValue = `+${percent}%`;
+                            } else if (attr.operation === 2) {
+                                // 乗算（合計値）
+                                displayValue = `×${truncate(1 + attr.amount)}`;
+                            }
+                            
+                            detailHtml += `
+                                <div class="attribute-simple-item">
+                                    ${name} ${displayValue}
+                                </div>
+                            `;
+                        });
+                        detailHtml += `</div>`;
+                    });
+                    
+                    detailHtml += `</div>`;
+                }
+                
+                // その他の情報
+                const otherInfo = [];
+                if (itemInfo.unbreakable) otherInfo.push('不可壊');
+                if (itemInfo.damage !== null) otherInfo.push(`ダメージ: ${itemInfo.damage}`);
+                if (itemInfo.customModelData !== null) otherInfo.push(`カスタムモデル: ${itemInfo.customModelData}`);
+                
+                if (otherInfo.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <h3>その他</h3>
+                            <div class="other-info">
+                                ${otherInfo.map(info => `<span class="info-badge">${info}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
             }
             
             body.innerHTML = detailHtml;
@@ -447,4 +813,3 @@
     </script>
 </body>
 </html>
-

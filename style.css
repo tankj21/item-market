@@ -531,3 +531,107 @@ body {
 .auction-card:active {
     transform: scale(0.98);
 }
+
+/* エンチャントと属性リスト */
+.enchant-list, .attribute-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.enchant-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #334155;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #475569;
+}
+
+.enchant-name {
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.enchant-level {
+    color: #c084fc;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.attribute-item {
+    background: #334155;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #475569;
+}
+
+.attr-name {
+    color: #d8b4fe;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.attr-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+.attr-details span {
+    background: #1e293b;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.other-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.info-badge {
+    background: #334155;
+    color: #cbd5e1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #475569;
+    font-size: 0.875rem;
+}
+
+/* シンプルな属性表示 */
+.attribute-simple-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.attribute-simple-list:last-child {
+    margin-bottom: 0;
+}
+
+.attribute-category {
+    color: #d8b4fe;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.attribute-category:first-child {
+    margin-top: 0;
+}
+
+.attribute-simple-item {
+    background: #1e293b;
+    color: #60a5fa;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #3b82f6;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
